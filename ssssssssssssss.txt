@@ -1,0 +1,53 @@
+// Define a private static method named buildIndex that takes an array of file names as an argument
+private static void buildIndex(String[] files) {
+    // Start a for loop that iterates over the elements of the input array 'files'
+    for (String file : files) {
+        try {
+            // Create a new BufferedReader object that reads from the file specified by the current 'file' variable
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            // Declare a string variable named 'line' to hold each line read from the file
+            String line;
+            // Parse the integer ID from the current filename and assign it to the 'docId' variable
+            int docId = Integer.parseInt(file.replaceAll("[^0-9]", ""));
+            // Start a while loop that reads each line from the file and assigns it to the 'line' variable
+            while ((line = reader.readLine()) != null) {
+                // Split the 'line' variable into an array of individual words, delimited by whitespace characters
+                String[] words = line.split("\\s+");
+                // Iterate over the words in the 'words' array
+                for (String word : words) {
+                    // Remove any non-alphanumeric characters from the current 'word' and convert it to lowercase
+                    word = word.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
+                    // Check if the resulting 'word' is not empty
+                    if (!word.isEmpty()) {
+                        // If the 'word' is not already in the index, create a new entry for it
+                        if (!index.containsKey(word)) {
+                            index.put(word, new DictEntry());
+                        }
+                        // Get the existing entry for the 'word' in the index
+                        DictEntry entry = index.get(word);
+                        // Increment the term frequency count for the 'word' in the 'entry' object
+                        entry.term_freq++;
+                        // If the current document ID is not already in the posting list for the 'word', add it as a new posting
+                        if (entry.pList == null || entry.pList.docId != docId) {
+                            Posting posting = new Posting();
+                            posting.docId = docId;
+                            entry.doc_freq++;
+                            posting.next = entry.pList;
+                            entry.pList = posting;
+                        } 
+                        // If the current document ID is already in the posting list for the 'word', increment its frequency count
+                        else {
+                            entry.pList.dtf++;
+                        }
+                    }
+                }
+            }
+            // Close the BufferedReader object
+            reader.close();
+        } 
+        // If there is an IOException, print the stack trace
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
